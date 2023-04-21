@@ -1,0 +1,10 @@
+[galaxyservers]
+gat-10.eu.galaxy.training ansible_connection=local ansible_user=ubuntu
+[dbservers:children]
+galaxyservers
+[pulsarservers]
+gat-10.oz.galaxy.training ansible_user=ubuntu
+[monitoring]
+gat-10.eu.galaxy.training ansible_connection=local ansible_user=ubuntu
+[sentryservers]
+gat-10.eu.galaxy.training ansible_connection=local ansible_user=ubuntu

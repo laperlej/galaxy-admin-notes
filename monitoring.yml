@@ -1,0 +1,7 @@
+- hosts: monitoring
+  become: true
+  roles:
+    - usegalaxy_eu.influxdb
+    - cloudalchemy.grafana
+  vars:
+    influxdb_install_method: "does-not-exist"

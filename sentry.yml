@@ -1,0 +1,9 @@
+- hosts: sentryservers
+  become: true
+  vars_files:
+    - group_vars/secret.yml
+  pre_tasks:
+    - pip:
+        name: docker-compose
+  roles:
+    - mvdbeek.sentry_selfhosted
