@@ -271,25 +271,25 @@ check gunicorn `journalctl -eu galaxy-gunicorn`
 
 system might be killing it `/var/log/{messages,syslog,kern.log}, dmesg`
 
-#### Web/ui
+### Web/ui
 
 logs: gunicorn, nginx, browser console
 
-###### 502
+#### 502
 
 systemctl status galaxy-gunicorn: `[<PID>] [ERROR] Connection in use: ('localhost', 8080)`
 check galaxy is running
 check proxy `/var/log/nginx`
 check if listening `sudo ss -tlpn 'sport = :port'` or `sudo lsof -i :port`
 
-###### 504 gateway timeout
+#### 504 gateway timeout
 
 `htop -u galaxy` or `ps uwwW galaxy`
 check if STATE(S or STAT) is `D`(bad)
 check filesystem/disks
 restart galaxy
 
-###### slow ui/504
+#### slow ui/504
 
 check load:
 `uptime` average < nb cores (lscpu)
@@ -299,25 +299,25 @@ check grafana load average
 
 check load on web and database, check RAM/SWAP, check iowait
 
-###### slow ui
+#### slow ui
 
 py-spy
 
-###### blank page/ no css/javascript
+#### blank page/ no css/javascript
 
 check for 404
 check proxy error log for permission errors
 verify proxy static config
 rebuild client if recently modified gui/galaxy
 
-###### Tools not installed
+### Tools not installed
 
 tool not in left panel: check startup logs in galaxy for tool errors
 look for:
 `Loaded tool id: toolshed.g2.bx.psu.edu/repos/iuc/sickle/sickle/1.33, version: 1.33 into tool panel....`
 check `integrated_tool_panel.xml` or `shed_tol_conf.xml` if there is an entry for it
 
-###### tools failure
+### tools failure
 
 cleanup_job: onsuccess
 will keep the working dir if tool failed, make sure to cleanup
@@ -343,12 +343,34 @@ use BioContainers
 gateway timeout:
 nginx timout, need to change proxy_read_timeout setting (default 60 sec) (some galaxies use 6-10 mins)
 
-###### tool not running
+### tool not running
 
 gray means `job.state = 'new' or 'queued'` in db
 
+stuck on `job.state=new`:
+
+- handler issue (check galaxy/handler logs)
+
+stuck on `job.state=queued`:
+
+- check destination id `gxadmin query job-info`
+- `gxadmin query jobs-nonterminal [user]`
+- if exertnal ID is set it is queued on a cluster, check the cluster scheduler
+- check handler logs
+
+stuck on `job.state == 'running'`:
+
+- check cluster
+- if cluster says it's finished check handler
+
 successful logs:
+pN = process name
 p = PID
+tN: thread name
+
+(2) is the galaxy job ID
+if slurm
+(2/1) with 1 being slurm job ID
 
 ```
 galaxy.tools INFO 2023-04-20 13:51:20,736 [pN:main.1,p:273250,tN:WSGI_0] Validated and populated state for tool request (4.308 ms)
@@ -380,6 +402,18 @@ galaxy.model.metadata DEBUG 2023-04-20 13:51:25,212 [pN:handler_1,p:272701,tN:Lo
 galaxy.jobs INFO 2023-04-20 13:51:25,235 [pN:handler_1,p:272701,tN:LocalRunner.work_thread-3] Collecting metrics for Job 2 in /data/jobs/000/2
 galaxy.jobs DEBUG 2023-04-20 13:51:25,250 [pN:handler_1,p:272701,tN:LocalRunner.work_thread-3] job_wrapper.finish for job 2 executed (51.404 ms)
 ```
+
+### Database
+
+slow_query_log_threshold to log slow queries in galaxy log file
+sentry_sloreq_threshold for sentry
+
+increase pgsql shared_buffers size, use PGTune
+
+### Quota
+
+check if purged
+go in admin menu ` Recalculate Disk Usage` or use `scripts/set_user_disk_usage.py` on the user (recalculated on logout otherwise)
 
 ## Conda
 
